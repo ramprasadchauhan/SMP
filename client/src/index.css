@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+input,
+textarea,
+select {
+  min-height: 45px !important;
+  border: 1px solid #b9b9b9 !important;
+  width: 100% !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border: 1px solid #b9b9b9 !important;
+  box-shadow: none !important;
+}
+button {
+  height: 45px !important;
+}
+
+table {
+  border: #cecdcd 1px solid !important;
+  border-radius: 2px;
+}

@@ -32,7 +32,7 @@ export const getProducts = async (req, res, next) => {
     res.json({
       success: true,
       message: "products fetch successfully",
-      products,
+      data: products,
     });
   } catch (error) {
     next(error);
@@ -85,6 +85,19 @@ export const updateProductStatus = async (req, res, next) => {
     res.json({
       success: true,
       message: "Product status updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id).populate("seller");
+    res.json({
+      success: true,
+      data: product,
     });
   } catch (error) {
     next(error);

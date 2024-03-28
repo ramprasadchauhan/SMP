@@ -76,3 +76,14 @@ export const UpdateProductStatus = async (id, status) => {
     return error.message;
   }
 };
+
+export const GetProductById = async (id) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/product/get-product-by-id/${id}`
+    );
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};

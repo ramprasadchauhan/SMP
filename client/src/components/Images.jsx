@@ -2,7 +2,11 @@ import { Button, Upload, message } from "antd";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
-import { DeleteProduct, uploadProductImage } from "../apiCalls/products";
+import {
+  DeleteProduct,
+  EditProduct,
+  uploadProductImage,
+} from "../apiCalls/products";
 
 const Images = ({ selectedProduct, getData, setShowProductForm }) => {
   const [showPreview, setShowPreview] = useState(true);
@@ -30,8 +34,52 @@ const Images = ({ selectedProduct, getData, setShowProductForm }) => {
       return message.error(error.message);
     }
   };
+  const deleteImage = async (image) => {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+    if (!shouldDelete) return;
+    try {
+      dispatch(setLoader(true));
+
+      const updatedImageArray = images?.filter((img) => img !== image);
+      const updatedProduct = { ...selectedProduct, images: updatedImageArray };
+      const response = await EditProduct(selectedProduct._id, updatedProduct);
+      if (response.success) {
+        message.success(response.message);
+        setImages(updatedImageArray);
+        getData();
+      } else {
+        throw new Error(response.message);
+      }
+      dispatch(setLoader(false));
+    } catch (error) {
+      dispatch(setLoader(false));
+      return message.error(error.message);
+    }
+  };
   return (
     <div>
+      <div className="flex gap-5">
+        {images.map((image, i) => {
+          return (
+            <div
+              className="flex gap-2 border-gray-300 border-solid p-2 items-end"
+              key={i}
+            >
+              <img
+                className=" w-20 h-20 rounded-md object-cover"
+                src={image}
+                alt="product-image"
+              />
+              <i
+                onClick={() => deleteImage(image)}
+                className="ri-delete-bin-6-line font-semibold text-red-400"
+              ></i>
+            </div>
+          );
+        })}
+      </div>
       <Upload
         beforeUpload={() => false}
         listType="picture"
@@ -41,23 +89,6 @@ const Images = ({ selectedProduct, getData, setShowProductForm }) => {
         }}
         showUploadList={showPreview}
       >
-        <div className="flex gap-5">
-          {images.map((image, i) => {
-            return (
-              <div
-                className="flex gap-2 border-gray-300 border-solid p-2 items-end"
-                key={i}
-              >
-                <img
-                  className=" w-20 h-20 rounded-md  object-cover"
-                  src={image}
-                  alt="product-image"
-                />
-                <i className="ri-delete-bin-6-line font-semibold text-red-400"></i>
-              </div>
-            );
-          })}
-        </div>
         <Button type="default" className="rounded-tl-md rounded-br-md mt-4">
           upload image
         </Button>

@@ -4,6 +4,7 @@ import {
   addProduct,
   deleteProduct,
   editProduct,
+  getProductById,
   getProducts,
   storage,
   updateProductStatus,
@@ -18,6 +19,7 @@ router.post("/add-product", verifyToken, addProduct);
 router.post("/get-products", getProducts);
 router.put("/edit-product/:id", verifyToken, editProduct);
 router.delete("/delete-product/:id", verifyToken, deleteProduct);
+router.get("/get-product-by-id/:id", getProductById);
 // update product status
 router.put("/update-product-status/:id", updateProductStatus);
 

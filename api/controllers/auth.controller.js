@@ -66,7 +66,7 @@ export const login = async (req, res, next) => {
         expiresIn: "1d",
       }
     );
-    console.log(process.env.JWT_SECRET);
+
     res.json({
       success: true,
       message: "User logged in successfully",

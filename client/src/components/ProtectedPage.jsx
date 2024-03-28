@@ -41,7 +41,7 @@ const ProtectedPage = ({ children }) => {
       <div>
         {/* Header */}
         <div className="self-center whitespace-nowrap text-sm sm:text-xl font-semi-bold p-4 bg-slate-200 flex justify-between items-center">
-          <p className="cursor-pointer">
+          <p onClick={() => navigate("/")} className="cursor-pointer">
             <span className="px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white">
               SHEY
             </span>

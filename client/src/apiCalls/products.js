@@ -62,3 +62,17 @@ export const uploadProductImage = async (payload) => {
     return error.message;
   }
 };
+
+// update product status
+
+export const UpdateProductStatus = async (id, status) => {
+  try {
+    const response = await axiosInstance.put(
+      `/api/product/update-product-status/${id}`,
+      { status }
+    );
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};

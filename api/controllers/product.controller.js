@@ -23,7 +23,9 @@ export const getProducts = async (req, res, next) => {
     if (seller) {
       filters.seller = seller;
     }
-    const products = await Product.find(filters).sort({ createdAt: -1 });
+    const products = await Product.find(filters)
+      .populate("seller")
+      .sort({ createdAt: -1 });
     if (!products) {
       return next(errorHandler(400, "Product not found"));
     }
@@ -70,3 +72,21 @@ export const storage = multer.diskStorage({
     callback(null, Date.now() + file.originalname);
   },
 });
+// update product status
+
+export const updateProductStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+    if (!id) {
+      return next(errorHandler(400, "Product ID is missing"));
+    }
+    await Product.findByIdAndUpdate(id, { status });
+    res.json({
+      success: true,
+      message: "Product status updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

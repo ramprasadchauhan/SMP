@@ -50,7 +50,13 @@ const ProtectedPage = ({ children }) => {
           <div className="bg-white py-2 px-5 rounded flex gap-1">
             <i className="ri-user-line"></i>
             <span
-              onClick={() => navigate("/profile")}
+              onClick={() => {
+                if (user.role === "user") {
+                  navigate("/profile");
+                } else {
+                  navigate("/admin");
+                }
+              }}
               className="hover:underline cursor-pointer uppercase"
             >
               {user.name}

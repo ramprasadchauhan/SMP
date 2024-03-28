@@ -46,6 +46,11 @@ export const login = async (req, res, next) => {
     if (!user) {
       return next(errorHandler(500, "User not exist"));
     }
+    if (user.status !== "active") {
+      return next(
+        errorHandler(500, "User account is blocked. Please contect to admin")
+      );
+    }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return next(errorHandler(400, "Invalid password"));
@@ -61,7 +66,7 @@ export const login = async (req, res, next) => {
         expiresIn: "1d",
       }
     );
-
+    console.log(process.env.JWT_SECRET);
     res.json({
       success: true,
       message: "User logged in successfully",

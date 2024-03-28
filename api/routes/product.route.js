@@ -6,6 +6,7 @@ import {
   editProduct,
   getProducts,
   storage,
+  updateProductStatus,
 } from "../controllers/product.controller.js";
 import multer from "multer";
 import cloudinary from "../config/cloudinaryConfig.js";
@@ -17,6 +18,8 @@ router.post("/add-product", verifyToken, addProduct);
 router.post("/get-products", getProducts);
 router.put("/edit-product/:id", verifyToken, editProduct);
 router.delete("/delete-product/:id", verifyToken, deleteProduct);
+// update product status
+router.put("/update-product-status/:id", updateProductStatus);
 
 router.post(
   "/upload-product-image",

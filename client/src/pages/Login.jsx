@@ -22,9 +22,11 @@ const Login = () => {
       const response = await LoginUser(values);
       dispatch(setLoader(false));
       navigate("/");
+
       if (response.success) {
         message.success(response.message);
         localStorage.setItem("token", response.data);
+        window.location.reload();
       } else {
         throw new Error(response.message);
       }

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
 import { DeleteProduct, GetProducts } from "../apiCalls/products";
 import moment from "moment";
+import Bids from "./Bids";
 
 const Products = () => {
   const [showProductForm, setShowProductForm] = useState(false);
@@ -12,7 +13,8 @@ const Products = () => {
   const { user } = useSelector((state) => state.users);
   const [products, setProducts] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-
+  const [showBids, setShowBids] = useState(false);
+  const [bids, setBids] = useState([]);
   const deleteProduct = async (id) => {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this product?"
@@ -36,7 +38,7 @@ const Products = () => {
 
   const columns = [
     { title: "Name", dataIndex: "name" },
-    { title: "Description", dataIndex: "description" },
+    { title: "Description", dataIndex: "description", ellipsis: true },
     { title: "Price", dataIndex: "price" },
     { title: "Category", dataIndex: "category" },
     { title: "Age", dataIndex: "age" },
@@ -53,7 +55,7 @@ const Products = () => {
       dataIndex: "action",
       render: (text, record) => {
         return (
-          <div className="flex gap-5">
+          <div className="flex gap-5 items-center cursor-pointer">
             <i
               className="ri-delete-bin-6-line font-semibold text-red-400"
               onClick={() => deleteProduct(record._id)}
@@ -65,6 +67,15 @@ const Products = () => {
                 setShowProductForm(true);
               }}
             ></i>
+            <span
+              onClick={() => {
+                setSelectedProduct(record);
+                setShowBids(true);
+              }}
+              className="underline"
+            >
+              show Bids
+            </span>
           </div>
         );
       },
@@ -116,6 +127,13 @@ const Products = () => {
           setShowProductForm={setShowProductForm}
           selectedProduct={selectedProduct}
           getData={getData}
+        />
+      )}
+      {showBids && (
+        <Bids
+          showBidsModal={showBids}
+          setShowBidsModal={setShowBids}
+          selectedProduct={selectedProduct}
         />
       )}
     </div>

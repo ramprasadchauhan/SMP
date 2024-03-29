@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
-import { GetProductById } from "../apiCalls/products";
-import { message } from "antd";
+import { GetAllBids, GetProductById } from "../apiCalls/products";
+import { Button, message } from "antd";
 import { useParams } from "react-router-dom";
 import Divider from "../components/Divider";
 import moment from "moment";
+import BidModal from "../components/BidModal";
 
 const ProductInfo = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [product, setProduct] = useState(null);
+  const [showAddNewBid, setShowAddNewBid] = useState("");
   const dispatch = useDispatch();
   const { id } = useParams();
+  const { user } = useSelector((state) => state.users);
   const getData = async () => {
     try {
       dispatch(setLoader(true));
       const response = await GetProductById(id);
       dispatch(setLoader(false));
       if (response.success) {
-        setProduct(response.data);
+        const bidsResponse = await GetAllBids({ product: id });
+        setProduct({
+          ...response.data,
+          bids: bidsResponse.data,
+        });
       }
     } catch (error) {
       dispatch(setLoader(false));
@@ -29,6 +36,7 @@ const ProductInfo = () => {
   useEffect(() => {
     getData();
   }, []);
+  console.log(product);
   return (
     product && (
       <div>
@@ -114,8 +122,50 @@ const ProductInfo = () => {
                 <span> {product?.seller.email} </span>
               </div>
             </div>
+            <Divider />
+            <div className="flex flex-col">
+              <div className="flex justify-between">
+                <h1 className="text-2xl font-semibold text-orange-900">Bids</h1>
+                <Button
+                  onClick={() => {
+                    setShowAddNewBid(!showAddNewBid);
+                  }}
+                  disabled={user._id === product.seller._id}
+                >
+                  New Bid
+                </Button>
+              </div>
+            </div>
+            {product.showBidsOnProductPage &&
+              product?.bids?.map((bid, i) => (
+                <div
+                  className="border border-gray-300 border-solid p-3 rounded"
+                  key={i}
+                >
+                  <div className="flex justify-between mt-2 text-gray-600 p-2">
+                    <span>Name</span>
+                    <span> {bid.buyer.name} </span>
+                  </div>
+                  <div className="flex justify-between mt-2 text-gray-600">
+                    <span>Bid Amount</span>
+                    <span>$ {bid.bidAmount} </span>
+                  </div>
+                  <div className="flex justify-between mt-2 text-gray-600">
+                    <span>Bid place On</span>
+                    <span> {moment(bid.createdAt).format("MMM D, YYYY")}</span>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
+        {showAddNewBid && (
+          <BidModal
+            product={product}
+            reloadData={getData}
+            showBidModal={showAddNewBid}
+            setShowBidModal={setShowAddNewBid}
+          />
+        )}
       </div>
     )
   );

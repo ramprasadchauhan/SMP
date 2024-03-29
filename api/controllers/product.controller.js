@@ -18,10 +18,13 @@ export const addProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { seller, category = [], age = [] } = req.body;
+    const { seller, category = [], age = [], status } = req.body;
     let filters = {};
     if (seller) {
       filters.seller = seller;
+    }
+    if (status) {
+      filters.status = status;
     }
     const products = await Product.find(filters)
       .populate("seller")

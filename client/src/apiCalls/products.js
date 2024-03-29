@@ -87,3 +87,27 @@ export const GetProductById = async (id) => {
     return error.message;
   }
 };
+
+//place a new bid
+
+export const AddNewBid = async (payload) => {
+  try {
+    const response = await axiosInstance.post(
+      "/api/bid/place-new-bid",
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};
+
+// get all bids
+export const GetAllBids = async () => {
+  try {
+    const response = await axiosInstance.post("/api/bid/get-all-bids");
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};

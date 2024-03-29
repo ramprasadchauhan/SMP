@@ -5,6 +5,7 @@ import connectDB from "./config/dbConfig.js";
 import authRoute from "./routes/auth.route.js";
 import userRoute from "./routes/user.route.js";
 import productRoute from "./routes/product.route.js";
+import bidRoute from "./routes/bidRoute.js";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.listen(port, () => {
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/product", productRoute);
+app.use("/api/bid", bidRoute);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

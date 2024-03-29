@@ -6,6 +6,7 @@ import authRoute from "./routes/auth.route.js";
 import userRoute from "./routes/user.route.js";
 import productRoute from "./routes/product.route.js";
 import bidRoute from "./routes/bidRoute.js";
+import notificationRoute from "./routes/notification.route.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/product", productRoute);
 app.use("/api/bid", bidRoute);
+app.use("/api/notification", notificationRoute);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

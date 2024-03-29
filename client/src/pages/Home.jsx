@@ -32,15 +32,15 @@ const Home = () => {
     }
   };
 
+  // useEffect(() => {
+  //   getData();
+  // }, []);
   useEffect(() => {
     getData();
-  }, []);
-  useEffect(() => {
-    console.log(filters);
   }, [filters]);
   console.log(products);
   return (
-    <div className="flex gap-5">
+    <div className="flex w-full gap-5">
       {showFilters && (
         <Filter
           showFilters={showFilters}
@@ -49,6 +49,7 @@ const Home = () => {
           filters={filters}
         />
       )}
+
       <div className="flex flex-col gap-5">
         <div className="flex gap-5 items-center">
           {!showFilters && (

@@ -16,7 +16,7 @@ const ages = [
 
 const Filter = ({ showFilters, setShowFilters, filters, setFilters }) => {
   return (
-    <div className="w-full flex flex-col transition duration-300">
+    <div className="min-w-[13rem] flex flex-col transition duration-300">
       <div className="flex justify-between">
         <h1 className=" text-xl text-orange-700">Filters</h1>
         <i

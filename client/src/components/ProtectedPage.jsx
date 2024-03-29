@@ -1,16 +1,23 @@
 /* eslint-disable react/prop-types */
-import { message } from "antd";
-import { useEffect } from "react";
+import { Avatar, Badge, message } from "antd";
+import { useEffect, useState } from "react";
 
 import { GetCurrentUser } from "../apiCalls/user";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
 import { setUser } from "../redux/userSlice";
+import Notification from "./Notification";
+import {
+  GetAllNotification,
+  ReadAllNotification,
+} from "../apiCalls/notification";
 
 const ProtectedPage = ({ children }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { user } = useSelector((state) => state.users);
   const validateToken = async () => {
     try {
@@ -28,14 +35,42 @@ const ProtectedPage = ({ children }) => {
       message.error(error.message);
     }
   };
+  const getNotifications = async () => {
+    try {
+      const response = await GetAllNotification();
 
+      if (response.success) {
+        setNotifications(response.data);
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
   useEffect(() => {
     if (localStorage.getItem("token")) {
       validateToken();
+      getNotifications();
     } else {
       navigate("/login");
     }
   }, []);
+
+  const readNotification = async () => {
+    try {
+      const response = await ReadAllNotification();
+
+      if (response.success) {
+        getNotifications();
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
   return (
     user && (
       <div>
@@ -48,7 +83,6 @@ const ProtectedPage = ({ children }) => {
             MP
           </p>
           <div className="bg-white py-2 px-5 rounded flex gap-1">
-            <i className="ri-user-line"></i>
             <span
               onClick={() => {
                 if (user.role === "user") {
@@ -61,6 +95,26 @@ const ProtectedPage = ({ children }) => {
             >
               {user.name}
             </span>
+            <Badge
+              className="cursor-pointer"
+              onClick={() => {
+                readNotification();
+                setShowNotifications(true);
+              }}
+              count={
+                notifications.filter((notification) => !notification.read)
+                  .length
+              }
+            >
+              <Avatar
+                style={{ backgroundColor: "white", borderColor: "lightblue" }}
+                shape="circle"
+                size="medium"
+                icon={
+                  <i className="ri-notification-line text-2xl text-green-400"></i>
+                }
+              />
+            </Badge>
             <i
               onClick={() => {
                 localStorage.removeItem("token");
@@ -71,6 +125,14 @@ const ProtectedPage = ({ children }) => {
           </div>
         </div>
         <div className="p-5">{children} </div>
+        {
+          <Notification
+            notifications={notifications}
+            reloadNotifications={getNotifications}
+            showNotification={showNotifications}
+            setShowNotification={setShowNotifications}
+          />
+        }
       </div>
     )
   );

@@ -8,6 +8,7 @@ export const newBid = async (req, res, next) => {
     res.json({
       success: true,
       message: "Bid placed successfully",
+      data: newBid,
     });
   } catch (error) {
     next(error);
@@ -29,7 +30,8 @@ export const getAllBids = async (req, res, next) => {
     const bids = await Bids.find(filters)
       .populate("product")
       .populate("buyer")
-      .populate("seller");
+      .populate("seller")
+      .sort({ createdAt: -1 });
     res.json({
       success: true,
       data: bids,

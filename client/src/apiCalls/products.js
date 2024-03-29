@@ -103,9 +103,12 @@ export const AddNewBid = async (payload) => {
 };
 
 // get all bids
-export const GetAllBids = async () => {
+export const GetAllBids = async (productId) => {
   try {
-    const response = await axiosInstance.post("/api/bid/get-all-bids");
+    const response = await axiosInstance.post(
+      "/api/bid/get-all-bids",
+      productId
+    );
     return response.data;
   } catch (error) {
     return error.message;

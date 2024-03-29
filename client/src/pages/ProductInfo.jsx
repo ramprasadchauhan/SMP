@@ -22,6 +22,8 @@ const ProductInfo = () => {
       dispatch(setLoader(false));
       if (response.success) {
         const bidsResponse = await GetAllBids({ product: id });
+        // const bidsResponse = await GetAllBids(id);
+
         setProduct({
           ...response.data,
           bids: bidsResponse.data,
@@ -107,6 +109,13 @@ const ProductInfo = () => {
                 <span>Warranty Available</span>
                 <span> {product?.warrantyAvailable ? "Yes" : "No"} </span>
               </div>
+              <div className="flex justify-between mt-2">
+                <span>Purchaged Year</span>
+                <span>
+                  {moment().subtract(product.age, "years").format("YYYY")} (
+                  {product.age} years ago)
+                </span>
+              </div>
             </div>
             <Divider />
             <div className="flex flex-col">
@@ -139,7 +148,7 @@ const ProductInfo = () => {
             {product.showBidsOnProductPage &&
               product?.bids?.map((bid, i) => (
                 <div
-                  className="border border-gray-300 border-solid p-3 rounded"
+                  className="border border-gray-300 border-solid p-3 rounded mt-5"
                   key={i}
                 >
                   <div className="flex justify-between mt-2 text-gray-600 p-2">

@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
 import { AddNewBid } from "../apiCalls/products";
+import { AddNotification } from "../apiCalls/notification";
 
 const BidModal = ({ showBidModal, setShowBidModal, product, reloadData }) => {
   const dispatch = useDispatch();
@@ -14,6 +15,8 @@ const BidModal = ({ showBidModal, setShowBidModal, product, reloadData }) => {
       message: "Required",
     },
   ];
+  console.log(product);
+  console.log(user.name);
   const onFinish = async (values) => {
     try {
       dispatch(setLoader(true));
@@ -23,9 +26,21 @@ const BidModal = ({ showBidModal, setShowBidModal, product, reloadData }) => {
         seller: product.seller._id,
         buyer: user._id,
       });
+      console.log(product);
+      console.log(response);
+      console.log(user.name);
+
       dispatch(setLoader(false));
       if (response.success) {
         message.success("Bid added successfully");
+        // send notification
+        await AddNotification({
+          title: "New bid has been placed",
+          message: `A new bid has been placed on Your product  ${product.name} by ${user.name} for ${values.bidAmount} `,
+          user: product.seller._id,
+          onClick: "/profile",
+          read: false,
+        });
         reloadData();
         setShowBidModal(false);
       } else {

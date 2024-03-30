@@ -1,12 +1,25 @@
 import Product from "../models/productModel.js";
 import { errorHandler } from "../utils/error.js";
 import multer from "multer";
-import cloudinary from "../config/cloudinaryConfig.js";
+import User from "../models/userModel.js";
+import Notification from "../models/notificationModal.js";
 
 export const addProduct = async (req, res, next) => {
   try {
     const newProduct = new Product(req.body);
     await newProduct.save();
+    // send notification to admin
+    const admins = await User.find({ role: "asmin" });
+    admins.forEach(async (admin) => {
+      const newNotification = new Notification({
+        user: admin._id,
+        message: `New product added by ${req.user.name}`,
+        title: "New Product",
+        onClick: "/admin",
+        read: false,
+      });
+      await newNotification.save();
+    });
     res.json({
       success: true,
       message: "Product added successfully",
@@ -98,7 +111,16 @@ export const updateProductStatus = async (req, res, next) => {
     if (!id) {
       return next(errorHandler(400, "Product ID is missing"));
     }
-    await Product.findByIdAndUpdate(id, { status });
+    const updatedProduct = await Product.findByIdAndUpdate(id, { status });
+    // send notification to seller
+    const newNotification = new Notification({
+      user: updatedProduct.seller,
+      message: `Your product ${updatedProduct.name} has been ${status} `,
+      title: "Product status updated",
+      onClick: "/profile",
+      read: false,
+    });
+    await newNotification.save();
     res.json({
       success: true,
       message: "Product status updated successfully",

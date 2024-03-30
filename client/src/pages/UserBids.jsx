@@ -1,18 +1,19 @@
-import { Modal, Table, message } from "antd";
+import { Table, message } from "antd";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
 import { GetAllBids } from "../apiCalls/products";
 import moment from "moment";
 
-const Bids = ({ showBidsModal, setShowBidsModal, selectedProduct }) => {
+const UserBids = () => {
   const [bidsData, setBidsData] = useState([]);
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.users);
   const getData = async () => {
     try {
       dispatch(setLoader(true));
       const response = await GetAllBids({
-        product: selectedProduct._id,
+        buyer: user._id,
       });
       dispatch(setLoader(false));
       if (response.success) {
@@ -25,23 +26,38 @@ const Bids = ({ showBidsModal, setShowBidsModal, selectedProduct }) => {
   };
   const column = [
     {
-      title: "Name",
-      dataIndex: "name",
+      title: "Product",
+      dataIndex: "product",
       render: (text, record) => {
-        return record.buyer.name;
+        return record.product.name;
+      },
+    },
+    {
+      title: "Bids placed on",
+      dataIndex: "createdAt",
+      render: (text, record) => {
+        return moment(text).format("DD-MM-YY");
+      },
+    },
+    {
+      title: "Seller",
+      dataIndex: "seller",
+      render: (text, record) => {
+        return record.seller.name;
+      },
+    },
+    {
+      title: "Offered Price",
+      dataIndex: "offerPrice",
+      render: (text, record) => {
+        return record.product.price;
       },
     },
     {
       title: "Bid Amount",
       dataIndex: "bidAmount",
     },
-    {
-      title: "Bid Date",
-      dataIndex: "createdAt",
-      render: (text, record) => {
-        return moment(text).format("MMM Do YYYY");
-      },
-    },
+
     {
       title: "Message",
       dataIndex: "message",
@@ -61,27 +77,15 @@ const Bids = ({ showBidsModal, setShowBidsModal, selectedProduct }) => {
   ];
 
   useEffect(() => {
-    if (selectedProduct) {
-      getData();
-    }
-  }, [selectedProduct]);
+    getData();
+  }, []);
   return (
-    <Modal
-      title="Bids"
-      open={showBidsModal}
-      onCancel={() => setShowBidsModal(false)}
-      centered
-      width={1200}
-      footer={null}
-    >
+    <div>
       <div className="flex flex-col gap-3">
-        <h1 className="text-xl text-primary">
-          Product Name: {selectedProduct.name}
-        </h1>
         <Table columns={column} dataSource={bidsData} />
       </div>
-    </Modal>
+    </div>
   );
 };
 
-export default Bids;
+export default UserBids;

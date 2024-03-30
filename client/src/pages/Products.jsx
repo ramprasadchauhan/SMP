@@ -14,7 +14,7 @@ const Products = () => {
   const [products, setProducts] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showBids, setShowBids] = useState(false);
-  const [bids, setBids] = useState([]);
+
   const deleteProduct = async (id) => {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this product?"
@@ -37,8 +37,21 @@ const Products = () => {
   };
 
   const columns = [
+    {
+      title: "Product",
+      dataIndex: "image",
+      render: (text, record) => {
+        return (
+          <img
+            className="w-20 h-20 object-cover rounded-md hover:scale-105"
+            src={record?.images?.length > 0 ? record?.images[0] : ""}
+            alt="No image"
+          />
+        );
+      },
+    },
     { title: "Name", dataIndex: "name" },
-    { title: "Description", dataIndex: "description", ellipsis: true },
+    // { title: "Description", dataIndex: "description", ellipsis: true },
     { title: "Price", dataIndex: "price" },
     { title: "Category", dataIndex: "category" },
     { title: "Age", dataIndex: "age" },

@@ -21,9 +21,9 @@ const Register = () => {
       dispatch(setLoader(true));
       const response = await RegisterUser(values);
       dispatch(setLoader(false));
-      navigate("/login");
-      console.log(response);
+
       if (response.success) {
+        navigate("/login");
         message.success({
           type: "success",
           content: response.message,
@@ -47,7 +47,7 @@ const Register = () => {
     <div className="min-h-screen bg-primary flex justify-center items-center">
       <div className="bg-white p-5 w-[450px] rounded">
         <h1 className="text-primary text-2xl">
-          SMP ~ <span className="text-gray-400">REGISTER</span>
+          SMP ~ <span className="text-gray-400 text-2xl">REGISTER</span>
         </h1>
         <Divider />
         <Form onFinish={onFinish} layout="vertical">

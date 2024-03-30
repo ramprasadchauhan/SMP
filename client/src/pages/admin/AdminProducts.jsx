@@ -11,6 +11,19 @@ const Products = () => {
   const [products, setProducts] = useState([]);
 
   const columns = [
+    {
+      title: "Product",
+      dataIndex: "image",
+      render: (text, record) => {
+        return (
+          <img
+            className="w-20 h-20 object-cover rounded-md hover:scale-105"
+            src={record?.images?.length > 0 ? record?.images[0] : ""}
+            alt="No image"
+          />
+        );
+      },
+    },
     { title: "Product", dataIndex: "name" },
     {
       title: "Seller",
@@ -19,7 +32,7 @@ const Products = () => {
         return record.seller.name;
       },
     },
-    { title: "Description", dataIndex: "description" },
+    // { title: "Description", dataIndex: "description" },
     { title: "Price", dataIndex: "price" },
     { title: "Category", dataIndex: "category" },
     { title: "Age", dataIndex: "age" },

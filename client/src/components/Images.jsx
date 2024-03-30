@@ -87,6 +87,7 @@ const Images = ({ selectedProduct, getData, setShowProductForm }) => {
           setShowPreview(true);
           setFile(info.file);
         }}
+        fileList={file ? [file] : []}
         showUploadList={showPreview}
       >
         <Button type="default" className="rounded-tl-md rounded-br-md mt-4">

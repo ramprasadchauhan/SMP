@@ -1,10 +1,11 @@
 import { Button, Form, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import Divider from "../components/Divider";
-import { LoginUser } from "../apiCalls/user";
+import { GetCurrentUser, LoginUser } from "../apiCalls/user";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setLoader } from "../redux/loadersSlice";
+import { setUser } from "../redux/userSlice";
 
 const rules = [
   {
@@ -20,26 +21,31 @@ const Login = () => {
     try {
       dispatch(setLoader(true));
       const response = await LoginUser(values);
-      dispatch(setLoader(false));
-      navigate("/");
-
+      console.log("response ", response);
       if (response.success) {
         message.success(response.message);
         localStorage.setItem("token", response.data);
-        window.location.reload();
+        const user = await GetCurrentUser();
+        console.log(user);
+        dispatch(setUser(user.data));
+        dispatch(setLoader(false));
+        navigate("/");
       } else {
         throw new Error(response.message);
       }
     } catch (error) {
       dispatch(setLoader(false));
+      console.log(error);
       return message.error(error.message);
+    } finally {
+      dispatch(setLoader(false));
     }
   };
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (localStorage.getItem("token")) {
+  //     navigate("/");
+  //   }
+  // }, []);
   return (
     <div className="min-h-screen bg-primary flex justify-center items-center">
       <div className="bg-white p-5 w-[450px] rounded">

@@ -14,6 +14,7 @@
     "@reduxjs/toolkit": "^2.2.2",
     "antd": "^5.15.3",
     "axios": "^1.6.8",
+    "mern-smp": "file:..",
     "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

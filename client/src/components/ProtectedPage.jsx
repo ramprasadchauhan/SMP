@@ -19,6 +19,13 @@ const ProtectedPage = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const { user } = useSelector((state) => state.users);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    dispatch(setUser(null));
+    navigate("/login");
+  };
+
   const validateToken = async () => {
     try {
       dispatch(setLoader(true));
@@ -27,12 +34,15 @@ const ProtectedPage = ({ children }) => {
       if (response.success) {
         dispatch(setUser(response.data));
       } else {
+        // if token is invalid or expired
         message.error(response.message);
+        logout();
       }
     } catch (error) {
+      console.log(error);
       dispatch(setLoader(false));
-      navigate("/login");
       message.error(error.message);
+      logout();
     }
   };
   const getNotifications = async () => {
@@ -45,6 +55,7 @@ const ProtectedPage = ({ children }) => {
         throw new Error(response.message);
       }
     } catch (error) {
+      console.log(error);
       message.error(error.message);
     }
   };
@@ -67,6 +78,7 @@ const ProtectedPage = ({ children }) => {
         throw new Error(response.message);
       }
     } catch (error) {
+      console.log(error);
       message.error(error.message);
     }
   };
@@ -117,8 +129,7 @@ const ProtectedPage = ({ children }) => {
             </Badge>
             <i
               onClick={() => {
-                localStorage.removeItem("token");
-                navigate("/login");
+                logout();
               }}
               className="ri-logout-box-r-line cursor-pointer ml-10"
             ></i>

@@ -32,9 +32,6 @@ const Home = () => {
     }
   };
 
-  // useEffect(() => {
-  //   getData();
-  // }, []);
   useEffect(() => {
     getData();
   }, [filters]);

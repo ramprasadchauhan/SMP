@@ -17,10 +17,7 @@ const __dirname = path.resolve();
 
 const port = process.env.PORT || 8500;
 
-app.listen(port, () => {
-  connectDB();
-  console.log(`app is running on port ${port}`);
-});
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/client/dist")));
@@ -43,4 +40,9 @@ app.use((err, req, res, next) => {
     statusCode,
     message,
   });
+});
+
+app.listen(port, () => {
+  connectDB();
+  console.log(`app is running on port ${port}`);
 });

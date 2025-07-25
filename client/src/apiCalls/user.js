@@ -27,7 +27,7 @@ export const GetCurrentUser = async () => {
     const response = await axiosInstance.get("/api/user/get-current-user");
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -36,7 +36,7 @@ export const GetAllUsers = async () => {
     const response = await axiosInstance.get("/api/user/get-all-users");
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -48,6 +48,6 @@ export const UpdateUserStatus = async (id, status) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };

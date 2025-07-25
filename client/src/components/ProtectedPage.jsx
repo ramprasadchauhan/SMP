@@ -59,14 +59,6 @@ const ProtectedPage = ({ children }) => {
       message.error(error.message);
     }
   };
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      validateToken();
-      getNotifications();
-    } else {
-      navigate("/login");
-    }
-  }, []);
 
   const readNotification = async () => {
     try {

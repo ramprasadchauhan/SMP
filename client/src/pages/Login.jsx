@@ -41,11 +41,11 @@ const Login = () => {
       dispatch(setLoader(false));
     }
   };
-  // useEffect(() => {
-  //   if (localStorage.getItem("token")) {
-  //     navigate("/");
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="min-h-screen bg-primary flex justify-center items-center">
       <div className="bg-white p-5 w-[450px] rounded">

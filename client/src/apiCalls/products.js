@@ -10,7 +10,7 @@ export const AddProduct = async (payload) => {
     console.log(response);
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -23,7 +23,7 @@ export const GetProducts = async (filters) => {
     console.log(response);
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -35,7 +35,7 @@ export const EditProduct = async (id, payload) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -46,7 +46,7 @@ export const DeleteProduct = async (id) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -59,7 +59,7 @@ export const uploadProductImage = async (payload) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -73,7 +73,7 @@ export const UpdateProductStatus = async (id, status) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -84,7 +84,7 @@ export const GetProductById = async (id) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -98,7 +98,7 @@ export const AddNewBid = async (payload) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };
 
@@ -111,6 +111,6 @@ export const GetAllBids = async (productId) => {
     );
     return response.data;
   } catch (error) {
-    return error.message;
+    return error.response.data;
   }
 };

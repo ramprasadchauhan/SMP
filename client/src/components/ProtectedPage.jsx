@@ -75,6 +75,15 @@ const ProtectedPage = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      validateToken();
+      getNotifications();
+    } else {
+      navigate("/login");
+    }
+  }, []);
+
   return (
     user && (
       <div>

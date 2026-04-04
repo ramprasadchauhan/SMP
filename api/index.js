@@ -17,7 +17,11 @@ const __dirname = path.resolve();
 
 const port = process.env.PORT || 8500;
 
-
+app.use("/api/auth", authRoute);
+app.use("/api/user", userRoute);
+app.use("/api/product", productRoute);
+app.use("/api/bid", bidRoute);
+app.use("/api/notification", notificationRoute);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/client/dist")));
@@ -25,12 +29,6 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
   });
 }
-
-app.use("/api/auth", authRoute);
-app.use("/api/user", userRoute);
-app.use("/api/product", productRoute);
-app.use("/api/bid", bidRoute);
-app.use("/api/notification", notificationRoute);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
@@ -44,5 +42,5 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
   connectDB();
-  console.log(`app is running on port ${port}`);
+  console.log(`app is running on port http://localhost:${port}`);
 });

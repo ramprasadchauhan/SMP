@@ -1,45 +1,22 @@
-import Bids from "../models/bidModel.js";
+import * as bidService from "../services/bid.service.js";
+import { sendSuccess } from "../utils/response.js";
 
-// place new bid
-export const newBid = async (req, res, next) => {
-  try {
-    const newBid = new Bids(req.body);
-    await newBid.save();
-    res.json({
-      success: true,
-      message: "Bid placed successfully",
-      data: newBid,
-    });
-  } catch (error) {
-    next(error);
-  }
+export const newBid = async (req, res) => {
+  const bid = await bidService.placeBid(req.user, req.valid.params.id, req.valid.body);
+  sendSuccess(res, { status: 201, message: "Bid placed successfully", data: bid });
 };
 
-// get all bids
+export const getProductBids = async (req, res) => {
+  const { items, meta } = await bidService.listProductBids(req.user, req.valid.params.id, req.valid.query);
+  sendSuccess(res, { data: items, meta });
+};
 
-export const getAllBids = async (req, res, next) => {
-  try {
-    const { product, seller, buyer } = req.body;
-    let filters = {};
-    if (product) {
-      filters.product = product;
-    }
-    if (seller) {
-      filters.seller = seller;
-    }
-    if (buyer) {
-      filters.buyer = buyer;
-    }
-    const bids = await Bids.find(filters)
-      .populate("product")
-      .populate("buyer")
-      .populate("seller")
-      .sort({ createdAt: -1 });
-    res.json({
-      success: true,
-      data: bids,
-    });
-  } catch (error) {
-    next(error);
-  }
+export const getMyBids = async (req, res) => {
+  const { items, meta } = await bidService.listMyBids(req.user, req.valid.query);
+  sendSuccess(res, { data: items, meta });
+};
+
+export const getReceivedBids = async (req, res) => {
+  const { items, meta } = await bidService.listReceivedBids(req.user, req.valid.query);
+  sendSuccess(res, { data: items, meta });
 };

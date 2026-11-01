@@ -4,24 +4,42 @@
   },
   "name": "mern-smp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "SMP: second-hand marketplace with seller listings, bidding and admin moderation (MERN).",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon api/index.js",
+    "dev": "nodemon --watch api api/index.js",
+    "dev:memory": "node api/scripts/dev-memory.js",
+    "dev:client": "npm run dev --prefix client",
     "start": "node api/index.js",
-    "build": "npm install && npm install --prefix client && npm run build --prefix client"
+    "build": "npm install && npm install --prefix client && npm run build --prefix client",
+    "test": "vitest run",
+    "test:client": "npm test --prefix client",
+    "test:e2e": "npm run test:e2e --prefix client",
+    "db:migrate": "node api/scripts/migrate.js",
+    "db:migrate:apply": "node api/scripts/migrate.js --apply"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.0.3",
+    "cloudinary": "^2.11.0",
+    "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
-    "express": "^4.19.1",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.2.3",
-    "multer": "^1.4.5-lts.1"
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.24.7",
+    "multer": "^2.5.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1",
+    "vitest": "^3.2.7"
   }
 }

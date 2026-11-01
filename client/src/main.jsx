@@ -1,32 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
 import "./index.css";
-import { ConfigProvider } from "antd";
-import { Provider } from "react-redux";
-import store from "./redux/store.js";
+import App from "./app/App.jsx";
+import Providers, { createQueryClient } from "./app/Providers.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import store from "./store/store.js";
+
+// Apply the saved theme before first paint to avoid a light/dark flash.
+document.documentElement.dataset.theme = store.getState().ui.theme;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <Provider store={store}>
-    <React.StrictMode>
-      <ConfigProvider
-        theme={{
-          components: {
-            Button: {
-              colorPrimary: "#40513B",
-              colorPrimaryHover: "#40513B",
-              borderRadius: 0,
-              boxShadow: "none",
-            },
-          },
-          token: {
-            borderRadius: "2px",
-            colorPrimary: "#40513B",
-          },
-        }}
-      >
+  <React.StrictMode>
+    <ErrorBoundary>
+      <Providers store={store} queryClient={createQueryClient()}>
         <App />
-      </ConfigProvider>
-    </React.StrictMode>
-  </Provider>
+      </Providers>
+    </ErrorBoundary>
+  </React.StrictMode>
 );

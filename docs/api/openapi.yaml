@@ -1,0 +1,235 @@
+openapi: 3.0.3
+info:
+  title: SMP Marketplace API
+  version: 1.0.0
+  description: >
+    Second-hand marketplace API. Human-readable reference with rules and error
+    codes: API_DOCUMENTATION.md. Unsafe methods require the header
+    `X-Requested-With: XMLHttpRequest` unless a Bearer token is used.
+servers:
+  - url: /api/v1
+security:
+  - cookieAuth: []
+  - bearerAuth: []
+components:
+  securitySchemes:
+    cookieAuth: { type: apiKey, in: cookie, name: smp_session }
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: string, pattern: "^[a-f0-9]{24}$" } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+    Q: { name: q, in: query, schema: { type: string, maxLength: 100 } }
+    Order: { name: order, in: query, schema: { type: string, enum: [asc, desc], default: desc } }
+  schemas:
+    Error:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        code: { type: string }
+        message: { type: string }
+        details: { type: array, items: { type: object, properties: { location: { type: string }, field: { type: string }, message: { type: string } } } }
+        requestId: { type: string }
+    Meta:
+      type: object
+      properties: { page: { type: integer }, limit: { type: integer }, total: { type: integer }, totalPages: { type: integer } }
+    User:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [user, admin] }
+        status: { type: string, enum: [active, blocked] }
+        lastLoginAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+    ProductInput:
+      type: object
+      additionalProperties: false
+      required: [name, description, price, category, age]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        description: { type: string, minLength: 10, maxLength: 2000 }
+        price: { type: number, minimum: 0 }
+        category: { type: string, enum: [electronics, fashion, home, sports, books] }
+        age: { type: integer, minimum: 0, maximum: 100 }
+        billAvailable: { type: boolean }
+        warrantyAvailable: { type: boolean }
+        accessoriesAvailable: { type: boolean }
+        boxAvailable: { type: boolean }
+        showBidsOnProductPage: { type: boolean }
+    Product:
+      allOf:
+        - $ref: "#/components/schemas/ProductInput"
+        - type: object
+          properties:
+            _id: { type: string }
+            images: { type: array, items: { type: string, format: uri } }
+            status: { type: string, enum: [pending, approved, rejected, blocked] }
+            seller: { type: object, properties: { _id: { type: string }, name: { type: string }, email: { type: string } } }
+            createdAt: { type: string, format: date-time }
+    Bid:
+      type: object
+      properties:
+        _id: { type: string }
+        product: {}
+        buyer: {}
+        seller: {}
+        bidAmount: { type: number }
+        message: { type: string }
+        mobile: { type: string }
+        createdAt: { type: string, format: date-time }
+    Notification:
+      type: object
+      properties: { _id: { type: string }, title: { type: string }, message: { type: string }, onClick: { type: string }, read: { type: boolean }, createdAt: { type: string, format: date-time } }
+    AuditLog:
+      type: object
+      properties:
+        actorName: { type: string }
+        action: { type: string, enum: [user.status_changed, user.role_changed, product.status_changed, product.deleted] }
+        targetType: { type: string, enum: [user, product] }
+        targetId: { type: string }
+        targetLabel: { type: string }
+        changes: { type: object }
+        requestId: { type: string }
+        createdAt: { type: string, format: date-time }
+  responses:
+    Error: { description: Error, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+    UserEnvelope:
+      description: OK
+      content: { application/json: { schema: { type: object, properties: { success: { type: boolean }, data: { type: object, properties: { user: { $ref: "#/components/schemas/User" } } } } } } }
+paths:
+  /health:
+    get: { tags: [System], security: [], summary: Liveness, responses: { "200": { description: OK } } }
+  /health/ready:
+    get: { tags: [System], security: [], summary: Readiness (MongoDB ping), responses: { "200": { description: Ready }, "503": { description: Database unavailable } } }
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { type: object, additionalProperties: false, required: [name, email, password], properties: { name: { type: string }, email: { type: string, format: email }, password: { type: string, minLength: 8 } } } } } }
+      responses: { "201": { $ref: "#/components/responses/UserEnvelope" }, "409": { $ref: "#/components/responses/Error" }, "422": { $ref: "#/components/responses/Error" } }
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [email, password], properties: { email: { type: string }, password: { type: string } } } } } }
+      responses: { "200": { $ref: "#/components/responses/UserEnvelope" }, "401": { $ref: "#/components/responses/Error" }, "403": { $ref: "#/components/responses/Error" } }
+  /auth/logout:
+    post: { tags: [Auth], security: [], responses: { "200": { description: Cookie cleared } } }
+  /auth/me:
+    get: { tags: [Auth], responses: { "200": { $ref: "#/components/responses/UserEnvelope" }, "401": { $ref: "#/components/responses/Error" } } }
+    patch:
+      tags: [Auth]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [name], properties: { name: { type: string } } } } } }
+      responses: { "200": { $ref: "#/components/responses/UserEnvelope" } }
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [currentPassword, newPassword], properties: { currentPassword: { type: string }, newPassword: { type: string } } } } } }
+      responses: { "200": { description: Changed; other sessions revoked }, "401": { $ref: "#/components/responses/Error" } }
+  /users:
+    get:
+      tags: [Users]
+      summary: List users (admin)
+      parameters:
+        - $ref: "#/components/parameters/Q"
+        - { name: role, in: query, schema: { type: string, enum: [user, admin] } }
+        - { name: status, in: query, schema: { type: string, enum: [active, blocked] } }
+        - { name: sort, in: query, schema: { type: string, enum: [createdAt, name, email, lastLoginAt] } }
+        - $ref: "#/components/parameters/Order"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses: { "200": { description: OK, content: { application/json: { schema: { type: object, properties: { data: { type: array, items: { $ref: "#/components/schemas/User" } }, meta: { $ref: "#/components/schemas/Meta" } } } } } }, "403": { $ref: "#/components/responses/Error" } }
+  /users/export:
+    get: { tags: [Users], summary: CSV export (admin), responses: { "200": { description: CSV, content: { text/csv: {} } } } }
+  /users/{id}:
+    get: { tags: [Users], parameters: [{ $ref: "#/components/parameters/Id" }], responses: { "200": { description: User detail with stats and activity }, "404": { $ref: "#/components/responses/Error" } } }
+  /users/{id}/status:
+    patch:
+      tags: [Users]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status], properties: { status: { type: string, enum: [active, blocked] } } } } } }
+      responses: { "200": { description: Updated }, "400": { $ref: "#/components/responses/Error" } }
+  /users/{id}/role:
+    patch:
+      tags: [Users]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [role], properties: { role: { type: string, enum: [user, admin] } } } } } }
+      responses: { "200": { description: Updated }, "409": { $ref: "#/components/responses/Error" } }
+  /products:
+    get:
+      tags: [Products]
+      security: []
+      summary: Marketplace (approved only)
+      parameters:
+        - $ref: "#/components/parameters/Q"
+        - { name: category, in: query, style: form, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: age, in: query, style: form, explode: true, schema: { type: array, items: { type: string, enum: ["0-2", "3-5", "6-8", "9-12", "13+"] } } }
+        - { name: minPrice, in: query, schema: { type: number } }
+        - { name: maxPrice, in: query, schema: { type: number } }
+        - { name: sort, in: query, schema: { type: string, enum: [newest, oldest, price_asc, price_desc] } }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses: { "200": { description: OK, content: { application/json: { schema: { type: object, properties: { data: { type: array, items: { $ref: "#/components/schemas/Product" } }, meta: { $ref: "#/components/schemas/Meta" } } } } } } }
+    post:
+      tags: [Products]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ProductInput" } } } }
+      responses: { "201": { description: Created as pending }, "422": { $ref: "#/components/responses/Error" } }
+  /products/mine:
+    get: { tags: [Products], parameters: [{ $ref: "#/components/parameters/Q" }, { $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/Limit" }], responses: { "200": { description: Caller's listings } } }
+  /products/manage:
+    get: { tags: [Products], summary: Moderation list (admin), parameters: [{ $ref: "#/components/parameters/Q" }, { $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/Limit" }], responses: { "200": { description: OK with meta.statusCounts } } }
+  /products/manage/export:
+    get: { tags: [Products], summary: CSV export (admin), responses: { "200": { description: CSV, content: { text/csv: {} } } } }
+  /products/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get: { tags: [Products], security: [{}, { cookieAuth: [] }], responses: { "200": { description: OK }, "404": { $ref: "#/components/responses/Error" } } }
+    patch: { tags: [Products], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ProductInput" } } } }, responses: { "200": { description: Updated }, "403": { $ref: "#/components/responses/Error" } } }
+    delete: { tags: [Products], responses: { "200": { description: Deleted with its bids }, "403": { $ref: "#/components/responses/Error" } } }
+  /products/{id}/status:
+    patch:
+      tags: [Products]
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status], properties: { status: { type: string, enum: [pending, approved, rejected, blocked] } } } } } }
+      responses: { "200": { description: Updated }, "409": { $ref: "#/components/responses/Error" } }
+  /products/{id}/images:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Products]
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, properties: { file: { type: string, format: binary } } } } } }
+      responses: { "201": { description: Uploaded }, "400": { $ref: "#/components/responses/Error" }, "413": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+    delete:
+      tags: [Products]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [url], properties: { url: { type: string, format: uri } } } } } }
+      responses: { "200": { description: Removed } }
+  /products/{id}/bids:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get: { tags: [Bids], responses: { "200": { description: "Bids; meta.visible / meta.privileged" } } }
+    post:
+      tags: [Bids]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [bidAmount, message, mobile], properties: { bidAmount: { type: number, exclusiveMinimum: true, minimum: 0 }, message: { type: string, maxLength: 500 }, mobile: { type: string } } } } } }
+      responses: { "201": { description: Placed }, "400": { $ref: "#/components/responses/Error" }, "404": { $ref: "#/components/responses/Error" } }
+  /bids/mine:
+    get: { tags: [Bids], parameters: [{ $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/Limit" }], responses: { "200": { description: OK } } }
+  /bids/received:
+    get: { tags: [Bids], parameters: [{ $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/Limit" }], responses: { "200": { description: OK } } }
+  /notifications:
+    get: { tags: [Notifications], parameters: [{ name: unread, in: query, schema: { type: boolean } }, { $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/Limit" }], responses: { "200": { description: "OK; meta.unreadCount" } } }
+  /notifications/read-all:
+    patch: { tags: [Notifications], responses: { "200": { description: OK } } }
+  /notifications/{id}/read:
+    patch: { tags: [Notifications], parameters: [{ $ref: "#/components/parameters/Id" }], responses: { "200": { description: OK }, "404": { $ref: "#/components/responses/Error" } } }
+  /notifications/{id}:
+    delete: { tags: [Notifications], parameters: [{ $ref: "#/components/parameters/Id" }], responses: { "200": { description: OK }, "404": { $ref: "#/components/responses/Error" } } }
+  /dashboard/summary:
+    get: { tags: [Dashboard], parameters: [{ name: days, in: query, schema: { type: integer, enum: [7, 30, 90, 365], default: 30 } }], responses: { "200": { description: "Admin or personal summary (data.scope)" } } }
+  /audit-logs:
+    get:
+      tags: [Audit]
+      parameters:
+        - { name: action, in: query, schema: { type: string } }
+        - { name: targetType, in: query, schema: { type: string, enum: [user, product] } }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses: { "200": { description: OK, content: { application/json: { schema: { type: object, properties: { data: { type: array, items: { $ref: "#/components/schemas/AuditLog" } }, meta: { $ref: "#/components/schemas/Meta" } } } } } } }

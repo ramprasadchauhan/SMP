@@ -1,0 +1,19 @@
+diff --git a/client/src/components/ProtectedPage.jsx b/client/src/components/ProtectedPage.jsx
+index 47f53fd..3266aa1 100644
+--- a/client/src/components/ProtectedPage.jsx
++++ b/client/src/components/ProtectedPage.jsx
+@@ -59,6 +59,14 @@ const ProtectedPage = ({ children }) => {
+       message.error(error.message);
+     }
+   };
++  useEffect(() => {
++    if (localStorage.getItem("token")) {
++      validateToken();
++      getNotifications();
++    } else {
++      logout();
++    }
++  }, []);
+ 
+   const readNotification = async () => {
+     try {

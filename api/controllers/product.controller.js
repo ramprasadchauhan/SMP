@@ -1,144 +1,70 @@
-import Product from "../models/productModel.js";
-import { errorHandler } from "../utils/error.js";
-import multer from "multer";
-import User from "../models/userModel.js";
-import Notification from "../models/notificationModal.js";
+import * as productService from "../services/product.service.js";
+import { sendSuccess } from "../utils/response.js";
+import { sendCsv, toCsv } from "../utils/csv.js";
 
-export const addProduct = async (req, res, next) => {
-  try {
-    const newProduct = new Product(req.body);
-    await newProduct.save();
-    // send notification to admin
-    const admins = await User.find({ role: "asmin" });
-    admins.forEach(async (admin) => {
-      const newNotification = new Notification({
-        user: admin._id,
-        message: `New product added by ${req.user.name}`,
-        title: "New Product",
-        onClick: "/admin",
-        read: false,
-      });
-      await newNotification.save();
-    });
-    res.json({
-      success: true,
-      message: "Product added successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+export const getMarketplace = async (req, res) => {
+  const { items, meta } = await productService.listMarketplace(req.valid.query);
+  sendSuccess(res, { data: items, meta });
 };
 
-export const getProducts = async (req, res, next) => {
-  try {
-    const { seller, category = [], age = [], status } = req.body;
-    let filters = {};
-    if (seller) {
-      filters.seller = seller;
-    }
-    if (status) {
-      filters.status = status;
-    }
-    // filter category
-    if (category.length > 0) {
-      filters.category = { $in: category };
-    }
-
-    // filter by age
-    if (age.length > 0) {
-      age.forEach((item) => {
-        const fromAge = item.split("-")[0];
-        const toAge = item.split("-")[1];
-        filters.age = { $gte: fromAge, $lte: toAge };
-      });
-    }
-
-    const products = await Product.find(filters)
-      .populate("seller")
-      .sort({ createdAt: -1 });
-    if (!products) {
-      return next(errorHandler(400, "Product not found"));
-    }
-    res.json({
-      success: true,
-      message: "products fetch successfully",
-      data: products,
-    });
-  } catch (error) {
-    next(error);
-  }
+export const getMine = async (req, res) => {
+  const { items, meta } = await productService.listOwnProducts(req.user, req.valid.query);
+  sendSuccess(res, { data: items, meta });
 };
 
-export const editProduct = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    await Product.findByIdAndUpdate(id, req.body);
-    res.json({
-      success: true,
-      message: "Product updated successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+export const getForModeration = async (req, res) => {
+  const { items, meta } = await productService.listForModeration(req.valid.query);
+  sendSuccess(res, { data: items, meta });
 };
 
-export const deleteProduct = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    await Product.findByIdAndDelete(id, req.body);
-    res.json({
-      success: true,
-      message: "Product deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+export const exportForModeration = async (req, res) => {
+  const products = await productService.exportForModeration(req.valid.query);
+  const csv = toCsv(
+    [
+      { label: "Name", value: (p) => p.name },
+      { label: "Category", value: (p) => p.category },
+      { label: "Price", value: (p) => p.price },
+      { label: "Age (years)", value: (p) => p.age },
+      { label: "Status", value: (p) => p.status },
+      { label: "Seller", value: (p) => p.seller?.name },
+      { label: "Seller email", value: (p) => p.seller?.email },
+      { label: "Created", value: (p) => p.createdAt },
+    ],
+    products
+  );
+  sendCsv(res, `products-${new Date().toISOString().slice(0, 10)}.csv`, csv);
 };
 
-// handle image upload in cloudinary
-
-export const storage = multer.diskStorage({
-  filename: function (req, file, callback) {
-    callback(null, Date.now() + file.originalname);
-  },
-});
-// update product status
-
-export const updateProductStatus = async (req, res, next) => {
-  try {
-    const { status } = req.body;
-    const { id } = req.params;
-    if (!id) {
-      return next(errorHandler(400, "Product ID is missing"));
-    }
-    const updatedProduct = await Product.findByIdAndUpdate(id, { status });
-    // send notification to seller
-    const newNotification = new Notification({
-      user: updatedProduct.seller,
-      message: `Your product ${updatedProduct.name} has been ${status} `,
-      title: "Product status updated",
-      onClick: "/profile",
-      read: false,
-    });
-    await newNotification.save();
-    res.json({
-      success: true,
-      message: "Product status updated successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+export const getProduct = async (req, res) => {
+  sendSuccess(res, { data: await productService.getProduct(req.valid.params.id, req.user) });
 };
 
-export const getProductById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const product = await Product.findById(id).populate("seller");
-    res.json({
-      success: true,
-      data: product,
-    });
-  } catch (error) {
-    next(error);
-  }
+export const addProduct = async (req, res) => {
+  const product = await productService.createProduct(req.user, req.valid.body);
+  sendSuccess(res, { status: 201, message: "Product submitted for review", data: product });
+};
+
+export const editProduct = async (req, res) => {
+  const product = await productService.updateProduct(req.user, req.valid.params.id, req.valid.body);
+  sendSuccess(res, { message: "Product updated", data: product });
+};
+
+export const deleteProduct = async (req, res) => {
+  await productService.deleteProduct(req.user, req.valid.params.id, req.id);
+  sendSuccess(res, { message: "Product deleted" });
+};
+
+export const updateProductStatus = async (req, res) => {
+  const product = await productService.updateProductStatus(req.user, req.valid.params.id, req.valid.body.status, req.id);
+  sendSuccess(res, { message: `Product ${product.status}`, data: product });
+};
+
+export const uploadImage = async (req, res) => {
+  const product = await productService.addProductImage(req.user, req.valid.params.id, req.file);
+  sendSuccess(res, { status: 201, message: "Image uploaded", data: product });
+};
+
+export const removeImage = async (req, res) => {
+  const product = await productService.removeProductImage(req.user, req.valid.params.id, req.valid.body.url);
+  sendSuccess(res, { message: "Image removed", data: product });
 };

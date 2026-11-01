@@ -12,7 +12,7 @@
     "dev:memory": "node api/scripts/dev-memory.js",
     "dev:client": "npm run dev --prefix client",
     "start": "node api/index.js",
-    "build": "npm install && npm install --prefix client && npm run build --prefix client",
+    "build": "npm install && npm install --prefix client --include=dev && npm run build --prefix client",
     "test": "vitest run",
     "test:client": "npm test --prefix client",
     "test:e2e": "npm run test:e2e --prefix client",
